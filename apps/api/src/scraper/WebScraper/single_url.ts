@@ -12,7 +12,7 @@ dotenv.config();
 export async function generateRequestParams(
   url: string,
   wait_browser: string = "domcontentloaded",
-  timeout: number = 15000
+  timeout: number = 30000
 ): Promise<any> {
   const defaultParams = {
     url: url,
@@ -48,31 +48,46 @@ export async function scrapWithCustomFirecrawl(
 export async function scrapWithScrapingBee(
   url: string,
   wait_browser: string = "domcontentloaded",
-  timeout: number = 15000
+  timeout: number = 30000
 ): Promise<string> {
-  try {
-    const client = new ScrapingBeeClient(process.env.SCRAPING_BEE_API_KEY);
-    const clientParams = await generateRequestParams(
-      url,
-      wait_browser,
-      timeout
-    );
-    
-    const response = await client.get(clientParams);
+  const maxRetries = 3;
+  let lastError;
 
-    if (response.status !== 200 && response.status !== 404) {
-      console.error(
-        `Scraping bee error in ${url} with status code ${response.status}`
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const client = new ScrapingBeeClient(process.env.SCRAPING_BEE_API_KEY);
+      const clientParams = await generateRequestParams(
+        url,
+        wait_browser,
+        timeout
       );
-      return "";
+
+      const response = await client.get(clientParams);
+
+      if (response.status !== 200 && response.status !== 404) {
+        console.error(
+          `Scraping bee error in ${url} with status code ${response.status} (attempt ${attempt}/${maxRetries})`
+        );
+        if (attempt === maxRetries) {
+          return "";
+        }
+        continue;
+      }
+      const decoder = new TextDecoder();
+      const text = decoder.decode(response.data);
+      return text;
+    } catch (error) {
+      lastError = error;
+      console.error(`Error scraping with Scraping Bee (attempt ${attempt}/${maxRetries}): ${error}`);
+      if (attempt < maxRetries) {
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
     }
-    const decoder = new TextDecoder();
-    const text = decoder.decode(response.data);
-    return text;
-  } catch (error) {
-    console.error(`Error scraping with Scraping Bee: ${error}`);
-    return "";
   }
+
+  console.error(`Failed to scrape ${url} after ${maxRetries} attempts. Last error: ${lastError}`);
+  return "";
 }
 
 export async function scrapWithPlaywright(url: string): Promise<string> {
@@ -139,7 +154,7 @@ export async function scrapSingleUrl(
           text = await scrapWithScrapingBee(
             url,
             "domcontentloaded",
-            pageOptions.fallback === false ? 7000 : 15000
+            pageOptions.fallback === false ? 15000 : 30000
           );
         }
         break;

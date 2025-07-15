@@ -1,36 +1,36 @@
-FROM node:20-slim AS base
+FROM node:20-slim
+
+# 设置环境变量
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-LABEL fly_launch_runtime="Node.js"
+ENV NODE_ENV=production
+ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+
+# 启用 pnpm
 RUN corepack enable
-COPY . /app
+
+# 安装系统依赖
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    chromium \
+    chromium-sandbox \
+    curl \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
 WORKDIR /app
 
-FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+# 复制项目文件
+COPY . .
 
-FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-
-RUN pnpm install
+# 安装依赖并构建
+RUN pnpm install --frozen-lockfile
 RUN pnpm run build
 
-# Install packages needed for deployment
+# 清理开发依赖
+RUN pnpm prune --prod
 
+EXPOSE 3002
 
-FROM base
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y chromium chromium-sandbox && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app /app
-
-
-
-
-# Start the server by default, this can be overwritten at runtime
-EXPOSE 8080
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
+# 启动应用
 CMD [ "pnpm", "run", "start:production" ]
-CMD [ "pnpm", "run", "worker:production" ]
 

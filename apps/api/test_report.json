@@ -1,0 +1,127 @@
+{
+  "summary": {
+    "totalTests": 9,
+    "successfulTests": 3,
+    "failedTests": 6,
+    "successRate": 33.3,
+    "timestamp": "2025-07-15T13:38:09.478Z"
+  },
+  "statsByType": {
+    "scrape": {
+      "total": 5,
+      "success": 3,
+      "avgResponseTime": 18714,
+      "successRate": "60.0"
+    },
+    "crawl": {
+      "total": 2,
+      "success": 0,
+      "avgResponseTime": 61,
+      "successRate": "0.0"
+    },
+    "search": {
+      "total": 2,
+      "success": 0,
+      "avgResponseTime": 5061,
+      "successRate": "0.0"
+    }
+  },
+  "detailedResults": [
+    {
+      "testType": "scrape",
+      "testName": "静态网站抓取",
+      "url": "https://example.com",
+      "statusCode": 200,
+      "responseTime": 2833,
+      "success": true,
+      "dataSize": 662,
+      "error": null,
+      "timestamp": "2025-07-15T13:36:08.393Z",
+      "contentLength": 244,
+      "hasMetadata": true,
+      "title": "Example Domain"
+    },
+    {
+      "testType": "scrape",
+      "testName": "新闻网站抓取",
+      "url": "https://news.ycombinator.com",
+      "success": false,
+      "error": "请求超时 (45000ms)",
+      "responseTime": 45024,
+      "timestamp": "2025-07-15T13:36:55.450Z"
+    },
+    {
+      "testType": "scrape",
+      "testName": "技术博客抓取",
+      "url": "https://blog.openai.com",
+      "statusCode": 200,
+      "responseTime": 559,
+      "success": true,
+      "dataSize": 57,
+      "error": "No page found",
+      "timestamp": "2025-07-15T13:36:58.031Z"
+    },
+    {
+      "testType": "scrape",
+      "testName": "无效URL测试",
+      "url": "https://nonexistent-domain-12345.com",
+      "statusCode": 200,
+      "responseTime": 152,
+      "success": true,
+      "dataSize": 57,
+      "error": "No page found",
+      "timestamp": "2025-07-15T13:37:00.186Z"
+    },
+    {
+      "testType": "scrape",
+      "testName": "PDF文档抓取",
+      "url": "https://arxiv.org/pdf/2301.00001.pdf",
+      "success": false,
+      "error": "请求超时 (45000ms)",
+      "responseTime": 45004,
+      "timestamp": "2025-07-15T13:37:47.192Z"
+    },
+    {
+      "testType": "crawl",
+      "testName": "小型网站爬取",
+      "url": "https://example.com",
+      "statusCode": 200,
+      "responseTime": 111,
+      "dataSize": 48,
+      "error": null,
+      "timestamp": "2025-07-15T13:37:49.306Z"
+    },
+    {
+      "testType": "crawl",
+      "testName": "技术文档爬取",
+      "url": "https://docs.python.org",
+      "statusCode": 200,
+      "responseTime": 10,
+      "dataSize": 48,
+      "error": null,
+      "timestamp": "2025-07-15T13:37:52.325Z"
+    },
+    {
+      "testType": "search",
+      "testName": "技术搜索",
+      "url": "JavaScript frameworks 2024",
+      "statusCode": 500,
+      "responseTime": 5101,
+      "success": false,
+      "dataSize": 66,
+      "error": "Cannot read properties of undefined (reading 'length')",
+      "timestamp": "2025-07-15T13:38:00.438Z"
+    },
+    {
+      "testType": "search",
+      "testName": "中文搜索",
+      "url": "人工智能发展趋势",
+      "statusCode": 500,
+      "responseTime": 5020,
+      "success": false,
+      "dataSize": 66,
+      "error": "Cannot read properties of undefined (reading 'length')",
+      "timestamp": "2025-07-15T13:38:07.472Z"
+    }
+  ]
+}
