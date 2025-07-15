@@ -1,7 +1,7 @@
 {
   "name": "firecrawl-scraper-js",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.1.2",
+  "description": "Firecrawl - 高性能网页抓取和搜索服务，支持单页抓取、批量爬取和智能搜索功能",
   "main": "index.js",
   "scripts": {
     "start": "nodemon --exec ts-node src/index.ts",
