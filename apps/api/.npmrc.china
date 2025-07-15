@@ -1,0 +1,21 @@
+# 淘宝镜像源
+registry=https://registry.npmmirror.com/
+
+# 二进制包镜像源
+puppeteer_download_host=https://npmmirror.com/mirrors
+chromedriver_cdnurl=https://npmmirror.com/mirrors/chromedriver
+electron_mirror=https://npmmirror.com/mirrors/electron/
+sass_binary_site=https://npmmirror.com/mirrors/node-sass/
+phantomjs_cdnurl=https://npmmirror.com/mirrors/phantomjs/
+python_mirror=https://npmmirror.com/mirrors/python/
+
+# 网络配置
+fetch-retries=3
+fetch-retry-factor=2
+fetch-retry-mintimeout=10000
+fetch-retry-maxtimeout=60000
+fetch-timeout=60000
+
+# 代理配置（如果需要）
+# proxy=http://127.0.0.1:10808
+# https-proxy=http://127.0.0.1:10808

@@ -1,98 +1,90 @@
-# Firecrawl ARM64 优化版 Docker Compose 配置
-# 移除 version 属性以避免警告（Docker Compose v2 推荐做法）
+version: '3.8'
 
 services:
   redis:
-    image: redis:7-alpine
-    restart: unless-stopped
+    image: redis:latest
+    restart: always
     volumes:
       - redis_data:/data
+    # Redis 配置优化
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.5'
-        reservations:
-          memory: 64M
-          cpus: '0.1'
 
   worker:
     build:
       context: .
       dockerfile: worker.Dockerfile
-    image: firecrawl-worker:fixed
+      # 构建参数，传递代理设置
+      args:
+        - HTTP_PROXY=${HTTP_PROXY:-}
+        - HTTPS_PROXY=${HTTPS_PROXY:-}
+        - NO_PROXY=${NO_PROXY:-}
+      # 禁用 BuildKit 缓存以避免缓存损坏问题
+      cache_from: []
+    image: 0001coder/coolcrawl-worker:enhanced
     pull_policy: never
     environment:
       - REDIS_URL=redis://redis:6379
       - USE_DB_AUTHENTICATION=false
       - NODE_ENV=production
-      # ARM64 Chromium 配置
-      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-      - PUPPETEER_SKIP_DOWNLOAD=true
-      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-      # 性能优化配置
-      - MAX_CONCURRENT_JOBS=3
-      - JOB_TIMEOUT=60000
-      - MEMORY_LIMIT=2048
-    restart: unless-stopped
+      # 网络配置
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NO_PROXY=${NO_PROXY:-}
+    restart: always
     depends_on:
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+    # 资源限制
     deploy:
       resources:
         limits:
           memory: 2G
-          cpus: '1.0'
         reservations:
           memory: 512M
-          cpus: '0.5'
 
   server:
     build:
       context: .
       dockerfile: server.Dockerfile
-    image: firecrawl-server:fixed
+      args:
+        - HTTP_PROXY=${HTTP_PROXY:-}
+        - HTTPS_PROXY=${HTTPS_PROXY:-}
+        - NO_PROXY=${NO_PROXY:-}
+      cache_from: []
+    image: 0001coder/coolcrawl-server:enhanced
     pull_policy: never
     environment:
       - REDIS_URL=redis://redis:6379
       - USE_DB_AUTHENTICATION=false
       - HOST=0.0.0.0
-      - PORT=3002
       - NODE_ENV=production
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NO_PROXY=${NO_PROXY:-}
     ports:
       - "3002:3002"
-    restart: unless-stopped
+    restart: always
     depends_on:
       redis:
         condition: service_healthy
+    # 健康检查
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3002/test"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '0.5'
+          memory: 2G
         reservations:
-          memory: 256M
-          cpus: '0.2'
+          memory: 512M
 
 volumes:
   redis_data:
     driver: local
-

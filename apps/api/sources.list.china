@@ -1,0 +1,14 @@
+# 清华大学镜像源
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+
+# 中科大镜像源（备用）
+deb https://mirrors.ustc.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb https://mirrors.ustc.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb https://mirrors.ustc.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+
+# 阿里云镜像源（备用）
+deb https://mirrors.aliyun.com/debian/ bookworm main contrib non-free non-free-firmware
+deb https://mirrors.aliyun.com/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb https://mirrors.aliyun.com/debian-security bookworm-security main contrib non-free non-free-firmware

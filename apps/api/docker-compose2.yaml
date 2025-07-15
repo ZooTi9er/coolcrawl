@@ -1,0 +1,29 @@
+version: '3.1'
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  worker:
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_DB_AUTHENTICATION=false
+    image: 0001coder/coolcrawl-worker:local # <-- 修改这里
+    # pull_policy: always  <-- 删除或注释掉这一行
+    restart: always
+
+  server:
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_DB_AUTHENTICATION=false
+      - HOST=0.0.0.0
+    image: 0001coder/coolcrawl-server:local # <-- 修改这里
+    # pull_policy: always  <-- 删除或注释掉这一行
+    ports:
+      - "3002:3002"
+    restart: always
+
+volumes:
+  redis_data:

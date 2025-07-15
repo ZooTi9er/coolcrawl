@@ -1,0 +1,41 @@
+version: '3.8'  # 使用最新推荐版本，兼容 Docker Desktop
+
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data  # 将 Redis 数据持久化到 named volume
+
+  worker:
+    build:
+      context: .  # 构建上下文为当前目录
+      dockerfile: worker.Dockerfile  # 指明 Dockerfile 文件
+      # 如果你使用 buildx 的多平台构建，可取消以下注释：
+      # platforms: ["linux/amd64", "linux/arm64"]
+    image: 0001coder/coolcrawl-worker:local  # 构建出的镜像打上 local 标签
+    pull_policy: never  # 禁用自动从远程拉取镜像，确保使用本地版本
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_DB_AUTHENTICATION=true  # 启用数据库认证
+      - API_KEY=fc-wuzhe12345  # 设置API密钥
+    restart: always  # 容器意外退出时自动重启
+
+  server:
+    build:
+      context: .  # 与 worker 相同构建上下文
+      dockerfile: server.Dockerfile
+      # platforms: ["linux/amd64", "linux/arm64"]
+    image: 0001coder/coolcrawl-server:local
+    pull_policy: never
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_DB_AUTHENTICATION=true  # 启用数据库认证
+      - API_KEY=fc-wuzhe12345  # 设置API密钥
+      - HOST=0.0.0.0  # 服务监听地址为所有接口
+    ports:
+      - "3002:3002"  # 将容器 3002 端口映射到本地主机端口
+    restart: always
+
+volumes:
+  redis_data:  # 定义名为 redis_data 的持久卷

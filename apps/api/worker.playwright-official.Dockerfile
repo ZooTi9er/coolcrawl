@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM mcr.microsoft.com/playwright:v1.54.1-noble-arm64 AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 LABEL fly_launch_runtime="Node.js"
@@ -10,36 +10,40 @@ RUN npm config set registry https://registry.npmmirror.com/ && \
     npm config set fetch-retry-mintimeout 10000 && \
     npm config set fetch-retry-maxtimeout 60000
 
-RUN corepack enable
+# 安装 pnpm
+RUN npm install -g pnpm@8.15.6 && \
+    corepack enable
 
-# 先复制 package 文件以利用 Docker 层缓存
-COPY package.json pnpm-lock.yaml .npmrc* ./
 WORKDIR /app
+
+# 复制 package 文件
 COPY package.json pnpm-lock.yaml .npmrc* ./
 
-FROM base AS prod-deps
-# 禁用缓存挂载，避免缓存损坏问题
+# 安装生产依赖
 RUN pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --prod --frozen-lockfile --no-optional && \
     rm -rf /tmp/pnpm-store
 
-FROM base AS build
-# 复制完整项目文件
+# 复制构建好的应用
 COPY . .
+
+# 构建应用
 RUN pnpm config set store-dir /tmp/pnpm-store && \
     pnpm install --frozen-lockfile --no-optional && \
     pnpm run build && \
     rm -rf /tmp/pnpm-store
 
-FROM base
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y chromium chromium-sandbox && \
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=build /app /app
+# 清理不必要的文件
+RUN rm -rf node_modules/.cache && \
+    rm -rf /tmp/* /var/tmp/*
 
-# Start the server by default, this can be overwritten at runtime
-EXPOSE 3002
-ENV PUPPETEER_EXECUTABLE_PATH="/usr/bin/chromium"
-CMD [ "pnpm", "run", "start:production" ]
+EXPOSE 8080
 
+# 配置 Playwright 环境变量
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# 配置 Puppeteer 使用 Playwright 的 Chromium
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+CMD [ "pnpm", "run", "worker:production" ]

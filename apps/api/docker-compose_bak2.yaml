@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  worker:
+    build:
+      context: .
+      dockerfile: worker.Dockerfile
+    image: 0001coder/coolcrawl-worker:local
+    pull_policy: never
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_DB_AUTHENTICATION=false
+    restart: always
+    depends_on:
+      - redis
+
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    image: 0001coder/coolcrawl-server:local
+    pull_policy: never
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_DB_AUTHENTICATION=false
+      - HOST=0.0.0.0
+    ports:
+      - "3002:3002"
+    restart: always
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:
